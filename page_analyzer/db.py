@@ -24,7 +24,7 @@ class Database:
  
     def __init__(self, database):
         """Initialize with database connection string."""
-        self.database = database
+        self.db = database
         self.conn = None
  
     @contextmanager
@@ -37,7 +37,7 @@ class Database:
             A DictCursor instance for database operations.
         """
         if self.conn is None or self.conn.closed:
-            self.conn = psycopg2.connect(self.database)
+            self.conn = psycopg2.connect(self.db)
         
         with self.conn.cursor(cursor_factory=DictCursor) as cur:
             try:
