@@ -75,9 +75,9 @@ class Database:
             cur.execute(query)
             return [dict(row) for row in cur.fetchall()]
  
-    def exist_url_id(self, url_id):
+    def find_url_id(self, url_id):
         """
-        Check if a URL with the given ID exists.
+        Find a URL by its ID.
         
         Args:
             url_id: The ID of the URL to check

@@ -18,7 +18,6 @@ Global Variables:
 - app: Flask application instance.
 - app.config['SECRET_KEY']: Secret key for the Flask application.
 - DATABASE_URL: URL for connecting to the PostgreSQL database.
-- DB: Instance of the Database class initialized with the DATABASE_URL.
 
 Routes and Functions:
 - index_get(): GET route for the homepage to render the index.html template.
@@ -49,7 +48,6 @@ app = Flask(__name__)
 load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
-DB = Database(DATABASE_URL)
 
 
 @app.route('/')
@@ -71,18 +69,20 @@ def index_post():
             'index.html',
             search=address), 422
 
-    id_url = DB.find_url_name(clean_url)
+    db = Database(DATABASE_URL)
+    id_url = db.find_url_name(clean_url)
     if id_url:
         flash('Страница уже существует', 'success')
     else:
-        id_url = DB.save_url(clean_url)
+        id_url = db.save_url(clean_url)
         flash('Страница успешно добавлена', 'success')
     return redirect(url_for('url', id=id_url), code=302)
 
 
 @app.route('/urls')
 def urls():
-    addresses = DB.get_content()
+    db = Database(DATABASE_URL)
+    addresses = db.get_content()
     return render_template(
         'urls.html',
         addresses=addresses
@@ -91,10 +91,11 @@ def urls():
 
 @app.route('/urls/<int:id>')
 def url(id):
-    address = DB.exist_url_id(id)
+    db = Database(DATABASE_URL)
+    address = db.find_url_id(id)
     if not address:
         return render_template('not_found.html'), 404
-    urls_check = DB.get_content_check(id)
+    urls_check = db.get_content_check(id)
     return render_template(
         'url.html',
         address=address,
@@ -104,11 +105,12 @@ def url(id):
 
 @app.post('/urls/<int:id>/check')
 def check_url(id):
-    url_name = DB.exist_url_id(id)['name']
+    db = Database(DATABASE_URL)
+    url_name = db.find_url_id(id)['name']
     try:
         content = utils.get_content(url_name)
         content['url_id'] = id
-        DB.save_url_check(content)
+        db.save_url_check(content)
         flash('Страница успешно проверена', 'success')
     except (requests.exceptions.HTTPError,
             requests.exceptions.ConnectionError,
