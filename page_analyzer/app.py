@@ -40,7 +40,8 @@ from flask import (
     url_for,
 )
 
-import page_analyzer.utils as utils
+import page_analyzer.page_handler as page_handler
+import page_analyzer.url_handler as url_handler
 from page_analyzer.db import Database
 
 app = Flask(__name__)
@@ -60,13 +61,13 @@ def index_get():
 @app.post('/urls')
 def index_post():
     address = request.form.get('url', '')
-    clean_url = utils.clear_url(address)
+    clean_url = url_handler.normalize_url(address)
     try:
-        utils.check_url(clean_url)
-    except (utils.URLTooLong, utils.URLNotValid):
+        url_handler.validate(clean_url)
+    except (url_handler.URLTooLong, url_handler.URLNotValid):
         flash('Некорректный URL', 'danger')
         return render_template(
-            'index.html',
+            'index.html', 
             search=address), 422
 
     db = Database(DATABASE_URL)
@@ -108,7 +109,7 @@ def check_url(id):
     db = Database(DATABASE_URL)
     url_name = db.find_url_id(id)['name']
     try:
-        content = utils.get_content(url_name)
+        content = page_handler.get_content(url_name)
         content['url_id'] = id
         db.save_url_check(content)
         flash('Страница успешно проверена', 'success')
