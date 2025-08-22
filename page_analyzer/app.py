@@ -40,8 +40,8 @@ from flask import (
     url_for,
 )
 
-import page_analyzer.page_handler as page_handler
-import page_analyzer.url_handler as url_handler
+import page_analyzer.page as page_handler
+import page_analyzer.url as url_handler
 from page_analyzer.db import Database
 
 app = Flask(__name__)
